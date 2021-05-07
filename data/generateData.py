@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 from itertools import product
-import utils
+from helpers import utils
 from pricer.curve import Curve
 from pricer.hw1f import hullWhite
 from pricer.swaption import Swaption
@@ -37,9 +37,10 @@ def SwaptionPrice2d(combinations, shuffRates):
         for i, comb in enumerate(combinations):
             chgX, T = comb.values()
             swpn = Swaption(T, S, swapFreq=0.5, payerOrReceiver="payer") # Only consider payer swaptions.
+            
             atmStrike = swpn.swapRate(curve)
             hw1f = hullWhite(0.05, sigma, curve=curve)
-            bach = Bachelier(curve, swpn, atmStrike+chgX)
+            bach = Bachelier(curve=curve, swaption=swpn, strike=atmStrike+chgX)
             
             priceVect[i] = hw1f.swaptionPrice(swpn, strike=atmStrike+chgX)
             volVect[i] = bach.impliedVolatility(priceVect[i])
@@ -52,6 +53,7 @@ def SwaptionPrice2d(combinations, shuffRates):
         volMatrix.append(volVect)
         df.append(data)
 
+    # Save
     X = pd.DataFrame(df)
     y1 = pd.DataFrame(priceMatrix, columns=[str(comb) for comb in combinations])
     y2 = pd.DataFrmae(volMatrix, columns=[str(comb) for comb in combinations])
@@ -62,7 +64,7 @@ def SwaptionPrice2d(combinations, shuffRates):
         
         
 if __name__ == "__main__":
-    budget = int(1e6)
+    budget = int(1e6) # Number of samples we want
     # Import historical curves
 
     histCurves = utils.import_data("data/ESTR_historical.xlsx", sheet="rates")
@@ -76,7 +78,6 @@ if __name__ == "__main__":
     histCurves.columns = str_maturities
     
     # =============================================================================
-
 
     # Randomly sample budget curves from 
     shuffRates = histCurves.copy(deep=True).sample(budget, replace=True)
