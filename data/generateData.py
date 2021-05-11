@@ -64,7 +64,7 @@ def SwaptionPrice2d(combinations, shuffRates):
         
         
 if __name__ == "__main__":
-    budget = int(1e6) # Number of samples we want
+    budget = int(1e5) # Number of samples we want
     # Import historical curves
 
     histCurves = utils.import_data("data/ESTR_historical.xlsx", sheet="rates")
